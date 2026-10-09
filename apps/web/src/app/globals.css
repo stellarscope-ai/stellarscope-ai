@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+:root {
+  --color-primary: #6366f1;
+  --color-secondary: #8b5cf6;
+  --color-accent: #06b6d4;
+  --color-dark: #0b0f1a;
+  --color-light: #f8fafc;
+}
+
+body {
+  background-color: var(--color-dark);
+  color: var(--color-light);
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+}
