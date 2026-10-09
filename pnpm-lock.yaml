@@ -69,9 +69,15 @@ importers:
       '@google/generative-ai':
         specifier: ^0.21.0
         version: 0.21.0
+      '@stellarscope/analytics':
+        specifier: workspace:*
+        version: link:../analytics
       '@stellarscope/shared':
         specifier: workspace:*
         version: link:../shared
+      '@stellarscope/stellar-data':
+        specifier: workspace:*
+        version: link:../stellar-data
     devDependencies:
       '@types/node':
         specifier: ^22.0.0

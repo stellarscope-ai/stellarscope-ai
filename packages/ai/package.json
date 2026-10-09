@@ -12,7 +12,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@stellarscope/shared": "workspace:*"
+    "@stellarscope/shared": "workspace:*",
+    "@stellarscope/stellar-data": "workspace:*",
+    "@stellarscope/analytics": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
