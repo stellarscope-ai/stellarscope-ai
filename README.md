@@ -94,8 +94,30 @@ pnpm typecheck    # Type-check all packages
 - **AI:** Google Gemini (free tier), provider-agnostic
 - **Blockchain:** Stellar Horizon API, Stellar SDK
 - **Contracts:** Rust + Soroban
-- **Testing:** Vitest
+- **Testing:** Vitest + cargo test
 - **Monorepo:** Turborepo + pnpm
+
+## Routes
+
+| Route | Description |
+|-------|-------------|
+| `/` | Landing page |
+| `/chat` | AI chat interface |
+| `/watchlists` | Watchlist management |
+| `/watchlists/[id]` | Watchlist detail |
+| `/api/health` | Health check |
+| `/api/chat` | SSE chat endpoint |
+| `/api/accounts/[id]` | Account lookup |
+| `/api/accounts/[id]/transactions` | Transaction history |
+| `/api/watchlists` | Watchlist CRUD |
+| `/api/auth/login` | Magic link login |
+
+## Tests
+
+```bash
+pnpm test           # 56 TypeScript tests
+cargo test          # 18 Rust contract tests
+```
 
 ## Contributing
 
