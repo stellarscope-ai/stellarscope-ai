@@ -29,3 +29,19 @@ export interface StellarTransaction {
   operationTypes?: string[];
   explorerUrl: string;
 }
+
+export interface AssetInfo {
+  assetCode: string;
+  assetIssuer: string;
+  assetType: string;
+  accounts: {
+    authorized: number;
+    authorizedToMaintainLiabilities: number;
+    unauthorized: number;
+  };
+  numAccounts: number;
+  payments24h: number;
+  trades24h: number;
+  supply: string;
+  link: string;
+}

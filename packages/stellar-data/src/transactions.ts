@@ -1,13 +1,15 @@
 import type { StellarTransaction } from "@stellarscope/shared";
 import { getDefaultClient } from "./client";
+import { validateStellarAddress, validatePaginationLimit } from "./validation";
+import { HorizonApiError } from "./errors";
 
-interface TransactionOptions {
+export interface TransactionOptions {
   limit?: number;
   order?: "asc" | "desc";
   cursor?: string;
 }
 
-interface TransactionPage {
+export interface TransactionPage {
   records: StellarTransaction[];
   nextCursor?: string;
 }
@@ -16,32 +18,59 @@ export async function getTransactionHistory(
   accountId: string,
   options?: TransactionOptions
 ): Promise<TransactionPage> {
+  validateStellarAddress(accountId);
+  if (options?.limit !== undefined) {
+    validatePaginationLimit(options.limit);
+  }
+
   const server = getDefaultClient();
-  let builder = server.transactions().forAccount(accountId);
 
-  if (options?.order) {
-    builder = builder.order(options.order);
-  }
-  if (options?.limit) {
-    builder = builder.limit(options.limit);
-  }
-  if (options?.cursor) {
-    builder = builder.cursor(options.cursor);
-  }
+  try {
+    let builder = server.transactions().forAccount(accountId);
 
-  const page = await builder.call();
-  const records = page.records as unknown as Record<string, unknown>[];
+    if (options?.order) {
+      builder = builder.order(options.order);
+    }
+    if (options?.limit) {
+      builder = builder.limit(options.limit);
+    }
+    if (options?.cursor) {
+      builder = builder.cursor(options.cursor);
+    }
 
-  return {
-    records: records.map(mapTransaction),
-    nextCursor: records.length > 0 ? (records[records.length - 1].paging_token as string) : undefined,
-  };
+    const page = await builder.call();
+    const records = page.records as unknown as Record<string, unknown>[];
+
+    return {
+      records: records.map(mapTransaction),
+      nextCursor: records.length > 0 ? (records[records.length - 1].paging_token as string) : undefined,
+    };
+  } catch (err: unknown) {
+    const error = err as { response?: { status?: number }; message?: string };
+    throw new HorizonApiError(
+      `Failed to fetch transactions: ${error.message ?? "unknown error"}`,
+      error.response?.status
+    );
+  }
 }
 
 export async function getTransactionDetails(txHash: string): Promise<StellarTransaction> {
+  if (!txHash || txHash.length !== 64) {
+    throw new Error(`Invalid transaction hash: ${txHash}`);
+  }
+
   const server = getDefaultClient();
-  const tx = (await server.transactions().transaction(txHash).call()) as unknown as Record<string, unknown>;
-  return mapTransaction(tx);
+
+  try {
+    const tx = (await server.transactions().transaction(txHash).call()) as unknown as Record<string, unknown>;
+    return mapTransaction(tx);
+  } catch (err: unknown) {
+    const error = err as { response?: { status?: number }; message?: string };
+    throw new HorizonApiError(
+      `Failed to fetch transaction: ${error.message ?? "unknown error"}`,
+      error.response?.status
+    );
+  }
 }
 
 function mapTransaction(tx: Record<string, unknown>): StellarTransaction {
