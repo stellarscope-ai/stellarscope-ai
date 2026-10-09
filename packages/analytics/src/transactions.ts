@@ -1,67 +1,102 @@
 import type { StellarTransaction } from "@stellarscope/shared";
 
-export interface TransactionSummary {
-  total: number;
+export interface DailyVolume {
+  date: string;
+  count: number;
   successful: number;
   failed: number;
-  byType: Record<string, number>;
-  byDay: Record<string, number>;
-  largestTransfers: StellarTransaction[];
 }
 
-export interface Pattern {
-  type: "recurring_payment" | "large_transfer" | "new_account";
-  description: string;
-  transactions: string[];
+export interface AccountActivity {
+  account: string;
+  transactionCount: number;
+  firstSeen: string;
+  lastSeen: string;
 }
 
-export function summarizeTransactions(transactions: StellarTransaction[]): TransactionSummary {
-  const byType: Record<string, number> = {};
-  const byDay: Record<string, number> = {};
+export interface TransferSummary {
+  totalTransactions: number;
+  successfulRate: number;
+  dailyBreakdown: DailyVolume[];
+  topAccounts: AccountActivity[];
+  timeRange: { start: string; end: string } | null;
+}
+
+export function summarizeTransactions(transactions: StellarTransaction[]): TransferSummary {
+  if (transactions.length === 0) {
+    return {
+      totalTransactions: 0,
+      successfulRate: 0,
+      dailyBreakdown: [],
+      topAccounts: [],
+      timeRange: null,
+    };
+  }
+
+  const dailyMap: Record<string, { count: number; successful: number; failed: number }> = {};
+  const accountMap: Record<string, { count: number; first: string; last: string }> = {};
 
   let successful = 0;
-  let failed = 0;
 
   for (const tx of transactions) {
     if (tx.successful) successful++;
-    else failed++;
 
     const day = tx.createdAt.slice(0, 10);
-    byDay[day] = (byDay[day] ?? 0) + 1;
+    if (!dailyMap[day]) dailyMap[day] = { count: 0, successful: 0, failed: 0 };
+    dailyMap[day].count++;
+    if (tx.successful) dailyMap[day].successful++;
+    else dailyMap[day].failed++;
 
-    for (const opType of tx.operationTypes ?? []) {
-      byType[opType] = (byType[opType] ?? 0) + 1;
-    }
+    const acct = tx.sourceAccount;
+    if (!accountMap[acct]) accountMap[acct] = { count: 0, first: tx.createdAt, last: tx.createdAt };
+    accountMap[acct].count++;
+    if (tx.createdAt < accountMap[acct].first) accountMap[acct].first = tx.createdAt;
+    if (tx.createdAt > accountMap[acct].last) accountMap[acct].last = tx.createdAt;
   }
 
+  const dailyBreakdown = Object.entries(dailyMap)
+    .map(([date, data]) => ({ date, ...data }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  const topAccounts = Object.entries(accountMap)
+    .map(([account, data]) => ({
+      account,
+      transactionCount: data.count,
+      firstSeen: data.first,
+      lastSeen: data.last,
+    }))
+    .sort((a, b) => b.transactionCount - a.transactionCount)
+    .slice(0, 10);
+
+  const sortedDates = dailyBreakdown.map((d) => d.date).sort();
+
   return {
-    total: transactions.length,
-    successful,
-    failed,
-    byType,
-    byDay,
-    largestTransfers: transactions.slice(0, 5),
+    totalTransactions: transactions.length,
+    successfulRate: transactions.length > 0 ? successful / transactions.length : 0,
+    dailyBreakdown,
+    topAccounts,
+    timeRange: sortedDates.length > 0
+      ? { start: sortedDates[0], end: sortedDates[sortedDates.length - 1] }
+      : null,
   };
 }
 
-export function detectPatterns(transactions: StellarTransaction[]): Pattern[] {
-  const patterns: Pattern[] = [];
+export function largestTransfers(transactions: StellarTransaction[], limit = 5): StellarTransaction[] {
+  return [...transactions]
+    .sort((a, b) => {
+      const feeA = parseFloat(a.fee) || 0;
+      const feeB = parseFloat(b.fee) || 0;
+      return feeB - feeA;
+    })
+    .slice(0, limit);
+}
 
-  const byAccount: Record<string, string[]> = {};
+export function transactionsByDay(transactions: StellarTransaction[]): Record<string, StellarTransaction[]> {
+  const byDay: Record<string, StellarTransaction[]> = {};
   for (const tx of transactions) {
-    byAccount[tx.sourceAccount] ??= [];
-    byAccount[tx.sourceAccount].push(tx.hash);
+    const day = tx.createdAt.slice(0, 10);
+    if (!byDay[day]) byDay[day] = [];
+    byDay[day].push(tx);
   }
-
-  for (const [account, hashes] of Object.entries(byAccount)) {
-    if (hashes.length >= 3) {
-      patterns.push({
-        type: "recurring_payment",
-        description: `Account ${account.slice(0, 8)}... has ${hashes.length} transactions in this period`,
-        transactions: hashes,
-      });
-    }
-  }
-
-  return patterns;
+  return byDay;
 }
