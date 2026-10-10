@@ -9,3 +9,5 @@ dist/
 target/
 *.log
 .DS_Store
+.vercel
+test_snapshots/
