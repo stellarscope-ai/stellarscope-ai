@@ -1,0 +1,38 @@
+# CODEOWNERS — automatic PR review assignment
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default: assign all reviews to the org owners
+*       @stellarscope-ai/stellarscope-ai
+
+# Smart contracts require extra scrutiny
+/contracts/         @stellarscope-ai/stellarscope-ai
+
+# Security-sensitive files
+/SECURITY.md        @stellarscope-ai/stellarscope-ai
+/.github/           @stellarscope-ai/stellarscope-ai
+
+# Database migrations
+/supabase/          @stellarscope-ai/stellarscope-ai
+
+# AI tool orchestration
+/packages/ai/       @stellarscope-ai/stellarscope-ai
+
+# Core data layer
+/packages/stellar-data/ @stellarscope-ai/stellarscope-ai
+
+# Analytics engine
+/packages/analytics/    @stellarscope-ai/stellarscope-ai
+
+# Shared types (affects all packages)
+/packages/shared/       @stellarscope-ai/stellarscope-ai
+
+# Web app
+/apps/web/              @stellarscope-ai/stellarscope-ai
+
+# Infrastructure and deployment
+/Dockerfile             @stellarscope-ai/stellarscope-ai
+/vercel.json            @stellarscope-ai/stellarscope-ai
+/.github/workflows/     @stellarscope-ai/stellarscope-ai
+
+# Docs
+/docs/                  @stellarscope-ai/stellarscope-ai
