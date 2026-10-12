@@ -10,6 +10,7 @@ import { HeaderBreadcrumbs } from "@/components/navigation/header-breadcrumbs";
 import { CreditsBadge } from "@/components/navigation/credits-badge";
 import { NewButton } from "@/components/navigation/new-button";
 import { NotificationsMenu } from "@/components/navigation/notifications-menu";
+import { WalletConnectButton } from "@/components/auth/wallet-connect";
 
 export default function AppHeader() {
   const [scrolled, setScrolled] = useState(false);
@@ -39,8 +40,7 @@ export default function AppHeader() {
       <HeaderBreadcrumbs />
 
       <div className="ml-auto flex items-center gap-2">
-        <CreditsBadge used={2450} limit={5000} plan="Free" />
-        <NewButton />
+        <WalletConnectButton />
         <ThemeToggle />
         <NotificationsMenu />
       </div>
