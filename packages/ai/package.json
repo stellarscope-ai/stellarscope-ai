@@ -19,7 +19,7 @@
   "devDependencies": {
     "@types/node": "^22.0.0",
     "typescript": "^5.7.0",
-    "vitest": "^5.0.0"
+    "vitest": "^5.0.5"
   },
   "peerDependencies": {
     "@google/generative-ai": "^0.21.0"
